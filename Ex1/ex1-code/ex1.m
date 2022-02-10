@@ -13,7 +13,7 @@ function ex1(questionNum)
     q1Init = [qn -1 1];
     q2Init = [qn 1 -1];
     spherePos = [0.65; 0.0; -0.75];
-
+    %spherePos = [0.65; 0.1; 0.75];
     % ========== Question 0 ==========
     if questionNum == 0
         close all;

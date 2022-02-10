@@ -5,5 +5,6 @@
 %              (orientation is to be ignored)
 
 function q = Q1(f, position)
-
+    T = SE3(position);
+    q = f.ikine(T);
 end
