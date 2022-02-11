@@ -11,5 +11,22 @@
 %                 (orientation is to be ignored)
 
 function traj = Q4(f, qInit, circle, velocity)
+        % Set tolerance (same as Q3)
+        epsilon = 0.05;
+        traj = [];
+        
+        % Loop through all points in desired path
+        [~, c] = size(circle);
+        for i = 1:c-1
+                posGoal = circle(:,i+1);
+                
+                % Find trajectory that connects the points
+                q = Q3(f, qInit, posGoal, epsilon, velocity);
 
+                % Update current angles
+                qInit = q(end,:);
+
+                % Append it to previous set of joints
+                traj = cat(1,traj,q);
+        end
 end

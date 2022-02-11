@@ -7,34 +7,22 @@
 
 function q = Q2(f, qInit, posGoal)
 
-        % Random initial joint angles
-        q = pi/100 * randi([-100, 100], 1, length(qInit));
+        % Initial joint angles gives a better path
+        q = qInit;
 
-        % Set q1 so first angle aligns with goal x-y coordinate
-        q(1) = atan(posGoal(2)/posGoal(1));
+        % find current position
+        FK = f.fkine(q);
+        dx = posGoal - FK.t;
 
-        % at position if hand is closed
-        q(7:9) = 0;
-
-        % repeat k times
-        i = 0;
-        step = 2*pi / 50;
-        while i <= 50
-                % find current position
-                FK = f.fkine(q);
-                pos = FK.t;
-
-                dx = posGoal - pos;
+        % Iterate until a solution is 1mm from the goal
+        step = 0.5;
+        while norm(dx) > 0.001
                 J = f.jacob0(q,'trans');
                 dq = step * pinv(J) * dx;
                 q = q + dq';
-
-                i = i+1;
-
+                FK = f.fkine(q);
+                pos = FK.t;
+                dx = posGoal - pos;
         end
-
-        FK = f.fkine(q);
-        pos = FK.t;
-        norm(posGoal-pos)
-
+        
 end

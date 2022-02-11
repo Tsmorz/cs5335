@@ -5,6 +5,6 @@
 %              (orientation is to be ignored)
 
 function q = Q1(f, position)
-    T = SE3(position);
-    q = f.ikine(T);
+        T = SE3(position);
+        q = f.ikine(T, 'mask', [1 1 1 0 0 0]);
 end
