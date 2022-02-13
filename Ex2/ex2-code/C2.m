@@ -10,5 +10,7 @@
 %                   == 0 otherwise
 
 function cspace = C2(robot, obstacles, q_grid)
-
+        robot
+        obstacles
+        q_grid
 end

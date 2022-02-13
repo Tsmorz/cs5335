@@ -13,4 +13,16 @@
 
 function [poly1, poly2, pivot1, pivot2] = q2poly(robot, q)
 
+        % Angle notation makes the code cleaner
+        q1 = q(1);
+        q12 = q(1) + q(2);
+        
+        % Find parameters for for link
+        pivot1 = robot.pivot1;
+        poly1 = [cos(q1), -sin(q1); sin(q1), cos(q1)] * robot.link1 + robot.pivot1;
+
+        % Find parameters for second link
+        pivot2 =  [cos(q1), -sin(q1); sin(q1), cos(q1)] * robot.pivot2 + robot.pivot1;
+        poly2 = [cos(q12), -sin(q12); sin(q12), cos(q12)] * robot.link2 + pivot2;
+
 end
