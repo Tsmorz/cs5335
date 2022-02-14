@@ -48,8 +48,9 @@ function cspace = ex2_cspace(questionNum, cspace)
         % Plot the robot in a given configuration, together with obstacles
         plot_obstacles(obstacles);
         % TODO: Implement this function
+        q_start = [0;0];
         C1(robot, q_start);
-        C1(robot, q_goal);
+        %C1(robot, q_goal);
     end
     
     % ========== Question C2 ==========
@@ -73,6 +74,7 @@ function cspace = ex2_cspace(questionNum, cspace)
         % Compute distance transform from q_goal
         % TODO: Implement this function
         distances = C3(cspace, q_grid, q_goal);
+
         % Visualize distance transform
         imshow(distances', [min(min(distances)), max(max(distances))]);
         set(gca, 'YDir', 'normal');
@@ -185,5 +187,15 @@ function cspace = ex2_cspace(questionNum, cspace)
         % Plot swept-volume collisions, if any
         num_collisions = C6(robot, obstacles, q_path);
         fprintf('Path contains %d collisions.\n', num_collisions);
+    end
+
+    %%%%%%%%%%%%%%%%%
+    if questionNum == 8
+        % If pre-computed configuration space is not provided,
+        % compute the configuration space using C2
+        map = C8(cspace);
+        imshow(1 - map');
+        set(gca, 'YDir', 'normal');
+        
     end
 end

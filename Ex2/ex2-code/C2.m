@@ -10,7 +10,38 @@
 %                   == 0 otherwise
 
 function cspace = C2(robot, obstacles, q_grid)
-        robot
-        obstacles
-        q_grid
+        q_grid = linspace(0,2*pi,200);
+        % Initialize cspace grid
+        cspace = zeros(length(q_grid));
+
+        % Loop through all angles in q1
+        for i = 1:length(q_grid)
+
+                % Loop through all angles in q2
+                for j = 1:length(q_grid)
+                        q = [q_grid(i); q_grid(j)];
+
+                        % Find new orientation after rotation
+                        [poly1, poly2, ~, ~] = q2poly(robot,q);
+                        
+                        % Loop through all obstacles
+                        for k = 1:length(obstacles)
+                                crash = intersect(poly1,obstacles(k));
+                                if crash.NumRegions ~= 0
+                                        cspace(i,j) = 1;
+                                end
+                        end
+
+                        % Loop through all obstacles
+                        for k = 1:length(obstacles)
+                                crash = intersect(poly2,obstacles(k));
+
+                                % Check for intersection of links and obstacles
+                                if crash.NumRegions ~= 0
+                                        cspace(i,j) = 1;
+                                end
+                        end
+
+                end
+        end
 end

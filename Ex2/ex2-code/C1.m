@@ -8,8 +8,8 @@ function C1(robot, q)
         [link1, link2, origin1, origin2] = q2poly(robot,q);
 
         % Plot the links
-        plot(polyshape(link1(1,:), link1(2,:)), 'FaceColor', 'r');
-        plot(polyshape(link2(1,:), link2(2,:)), 'FaceColor', 'b');
+        plot(link1, 'FaceColor', 'r');
+        plot(link2, 'FaceColor', 'b');
         
         % Plot the pivot points
         plot(origin1(1), origin1(2), 'k.', 'MarkerSize', 10);

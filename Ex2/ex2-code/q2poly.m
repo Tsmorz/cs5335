@@ -20,9 +20,11 @@ function [poly1, poly2, pivot1, pivot2] = q2poly(robot, q)
         % Find parameters for for link
         pivot1 = robot.pivot1;
         poly1 = [cos(q1), -sin(q1); sin(q1), cos(q1)] * robot.link1 + robot.pivot1;
-
+        poly1 = polyshape(poly1');
+        
         % Find parameters for second link
         pivot2 =  [cos(q1), -sin(q1); sin(q1), cos(q1)] * robot.pivot2 + robot.pivot1;
         poly2 = [cos(q12), -sin(q12); sin(q12), cos(q12)] * robot.link2 + pivot2;
+        poly2 = polyshape(poly2');
 
 end
