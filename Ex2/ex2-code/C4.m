@@ -15,5 +15,39 @@
 %                 the grid cell containing q_goal.
 
 function path = C4(distances, q_grid, q_start)
+        % Fing goal location
+        [goal_r, goal_c] = find(distances == 2);
+        loc_goal = [goal_r, goal_c];
 
+        % Find start location
+        [~, start_r] = min(abs(q_grid-q_start(1)));
+        [~, start_c] = min(abs(q_grid-q_start(2)));
+        loc_start = [start_r, start_c];
+
+        % Set all obstacles to max value + 1
+        distances(distances==1) = max(max(distances))+1;
+
+        % First step is start location
+        path = loc_start;
+        while path(end) ~= loc_goal
+                % Find neighbors
+                neighbors = [path(end,1)-1:path(end,1)+1; path(end,2)-1:path(end,2)+1];
+
+                %NEED TO CHECK FOR 0 and length(q_grid)
+                
+                square = distances(neighbors(1,:),neighbors(2,:));
+        
+                % Check the minimum value
+                [r,c] = find(square == min(min(square)));
+                % Break ties
+                if length(r)>1
+                        idx = randi([1,length(r)],1);
+                        r = r(idx);
+                        c = c(idx);
+                end
+        
+                % Add location to path
+                next = [path(end,1)+r-2, path(end,2)+c-2];
+                path = cat(1,path,next);
+        end
 end

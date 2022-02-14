@@ -19,26 +19,26 @@ function distances = C3(cspace, q_grid, q_goal)
         [~, r] = min(abs(q_grid-q_goal(1)));
         [~, c] = min(abs(q_grid-q_goal(2)));
         distances(r, c) = 2;
-
-        %distances = cat(1, distances, flipud(distances));
-        %distances = cat(2,fliplr(distances), distances);
         
         % Wavefront Planner
         %while until no zeros left
-        for i = 1:200
-                [rx,cx] = find(distances == (1+i));
+        i = 0;
+        while min(min(cspace)) < 1
+                [rx,cx] = find(distances == (2+i));
                 wall = [rx,cx];
+                done = true(1);
 
                 % Loop through all of front line
                 for j = 1:length(rx)
                         idx = wall(j,:);
-
+                        
                         % Shifted rows
                         for k = -1:1
-
                                 % Shifted columns
                                 for l = -1:1
-                                        % Catch for run over
+
+                                        %%%%%%%%%%%%%%%%%%%%
+                                        % Catch for values >2pi or <1
                                         r = idx(1)+k;
                                         if r > length(distances)
                                                 r = 1;
@@ -46,20 +46,29 @@ function distances = C3(cspace, q_grid, q_goal)
                                                 r = length(distances);
                                         end
 
-                                        % Catch for run over
+                                        % Catch for values >2pi or <1
                                         c = idx(2)+l;
                                         if c > length(distances)
                                                 c = 1;
                                         elseif c == 0
                                                 c = length(distances);
                                         end
+                                        %%%%%%%%%%%%%%%%%%%%%
 
                                         if distances(r, c) == 0
-                                                disp('yes')
-                                                distances(r, c) = 2+i;
+                                                distances(r, c) = 3+i;
+                                                % Change done to false
+                                                done = false(1);
                                         end
                                 end
                         end
-                end  
+                end
+
+                % Exit while loop if wave didn't spread
+                if done
+                        break
+                end
+                i = i+1;
+
         end
 end

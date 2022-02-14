@@ -10,7 +10,6 @@
 %                   == 0 otherwise
 
 function cspace = C2(robot, obstacles, q_grid)
-        q_grid = linspace(0,2*pi,200);
         % Initialize cspace grid
         cspace = zeros(length(q_grid));
 
