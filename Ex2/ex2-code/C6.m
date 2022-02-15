@@ -11,5 +11,13 @@
 %                           between consecutive configurations in q_path
 
 function num_collisions = C6(robot, obstacles, q_path)
+        %convhull
+        X = q_path(:,1);
+        Y = q_path(:,2);
+        K = convhull(X,Y);
+        robot
+        obstacles
+        q_path
+        num_collisions = 2*ones([length(q_path),1]);
 
 end

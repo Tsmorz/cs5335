@@ -13,5 +13,10 @@
 %                   the final row should be q_goal.
 
 function q_path = C5(q_grid, q_start, q_goal, path)
-
+        q1 = q_grid(path(:,1))';
+        q2 = q_grid(path(:,2))';
+        q_path = cat(2,q1, q2);
+        
+        q_path(1,:) = q_start;
+        q_path(end,:) = q_goal;
 end

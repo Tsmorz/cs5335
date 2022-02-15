@@ -15,6 +15,8 @@
 %                 the grid cell containing q_goal.
 
 function path = C4(distances, q_grid, q_start)
+        %q_start = 2*pi * rand([1,2]);
+
         % Fing goal location
         [goal_r, goal_c] = find(distances == 2);
         loc_goal = [goal_r, goal_c];
@@ -29,16 +31,20 @@ function path = C4(distances, q_grid, q_start)
 
         % First step is start location
         path = loc_start;
-        while path(end) ~= loc_goal
+        while or(path(end,1) ~= loc_goal(1), path(end,2) ~= loc_goal(2))
                 % Find neighbors
                 neighbors = [path(end,1)-1:path(end,1)+1; path(end,2)-1:path(end,2)+1];
 
-                %NEED TO CHECK FOR 0 and length(q_grid)
-                
+                % Check for locations beyond boundary
+                neighbors(neighbors==0) = length(q_grid);
+                neighbors(neighbors>length(q_grid)) = 1;
+
+                % 3x3 block of cells around current location
                 square = distances(neighbors(1,:),neighbors(2,:));
         
                 % Check the minimum value
                 [r,c] = find(square == min(min(square)));
+
                 % Break ties
                 if length(r)>1
                         idx = randi([1,length(r)],1);
@@ -47,7 +53,7 @@ function path = C4(distances, q_grid, q_start)
                 end
         
                 % Add location to path
-                next = [path(end,1)+r-2, path(end,2)+c-2];
+                next = [neighbors(1,r), neighbors(2,c)];
                 path = cat(1,path,next);
         end
 end

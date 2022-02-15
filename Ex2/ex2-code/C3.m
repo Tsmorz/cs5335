@@ -12,7 +12,6 @@
 %                      >  2 otherwise
 
 function distances = C3(cspace, q_grid, q_goal)
-        % Obstacle State = 1
         distances = cspace;
 
         % Goal State = 2
@@ -21,7 +20,6 @@ function distances = C3(cspace, q_grid, q_goal)
         distances(r, c) = 2;
         
         % Wavefront Planner
-        %while until no zeros left
         i = 0;
         while min(min(cspace)) < 1
                 [rx,cx] = find(distances == (2+i));
@@ -44,6 +42,8 @@ function distances = C3(cspace, q_grid, q_goal)
                                                 r = 1;
                                         elseif r == 0
                                                 r = length(distances);
+                                        elseif r<0
+                                                disp('negative')
                                         end
 
                                         % Catch for values >2pi or <1
@@ -52,6 +52,8 @@ function distances = C3(cspace, q_grid, q_goal)
                                                 c = 1;
                                         elseif c == 0
                                                 c = length(distances);
+                                        elseif c<0
+                                                disp('negative')
                                         end
                                         %%%%%%%%%%%%%%%%%%%%%
 
@@ -62,13 +64,13 @@ function distances = C3(cspace, q_grid, q_goal)
                                         end
                                 end
                         end
-                end
+                end                
 
                 % Exit while loop if wave didn't spread
                 if done
                         break
                 end
                 i = i+1;
-
+                %imshow(flipud(distances'), [min(min(distances)), max(max(distances))]);
         end
 end
