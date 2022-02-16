@@ -11,13 +11,39 @@
 %                           between consecutive configurations in q_path
 
 function num_collisions = C6(robot, obstacles, q_path)
-        %convhull
-        X = q_path(:,1);
-        Y = q_path(:,2);
-        K = convhull(X,Y);
-        robot
-        obstacles
-        q_path
-        num_collisions = 2*ones([length(q_path),1]);
+
+        num_collisions = 0;
+        for i = 1:length(q_path)-1
+                for j = 1:length(obstacles)
+
+                        % Find link locations
+                        [poly1i, poly2i, ~, ~] = q2poly(robot,q_path(i,:));
+                        [poly1ii, poly2ii, ~, ~] = q2poly(robot,q_path(i+1,:));
+        
+                        % Find swept shapes
+                        X = [poly1i.Vertices(:,1); poly1ii.Vertices(:,1)];
+                        Y = [poly1i.Vertices(:,2); poly1ii.Vertices(:,2)];
+                        idx = convhull(X,Y);
+                        sweep1 = polyshape([X(idx), Y(idx)]);
+
+                        X = [poly2i.Vertices(:,1); poly2ii.Vertices(:,1)];
+                        Y = [poly2i.Vertices(:,2); poly2ii.Vertices(:,2)];
+                        idx = convhull(X,Y);
+                        sweep2 = polyshape([X(idx), Y(idx)]);
+
+                        % Check for a crash
+                        crash1 = intersect(sweep1,obstacles(j));
+                        crash2 = intersect(sweep2,obstacles(j));
+                        if or(crash1.NumRegions > 0, crash2.NumRegions > 0)
+                                C1(robot,q_path(i,:))
+                                C1(robot,q_path(i+1,:))
+
+                                plot(sweep1, 'FaceColor', 'r');
+                                plot(sweep2, 'FaceColor', 'b');
+
+                                num_collisions = num_collisions + 1;
+                        end
+                end
+        end
 
 end

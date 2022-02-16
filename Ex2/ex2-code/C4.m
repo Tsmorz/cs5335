@@ -55,5 +55,13 @@ function path = C4(distances, q_grid, q_start)
                 % Add location to path
                 next = [neighbors(1,r), neighbors(2,c)];
                 path = cat(1,path,next);
+
+%                 imshow(distances', [min(min(distances)), max(max(distances))]);
+%                 hold on;
+%                 % Visualize found path
+%                 scatter(path(:,1), path(:,2), 'rs', 'MarkerFaceColor', 'r');
+%                 set(gca, 'YDir', 'normal');
+%                 pause(0.1)
+
         end
 end

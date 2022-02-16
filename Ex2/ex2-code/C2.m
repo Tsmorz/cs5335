@@ -11,6 +11,7 @@
 
 function cspace = C2(robot, obstacles, q_grid)
         % Initialize cspace grid
+        q_grid = linspace(0,2*pi,200);
         cspace = zeros(length(q_grid));
 
         % Loop through all angles in q1
