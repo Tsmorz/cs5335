@@ -22,4 +22,12 @@
 
 function [samples, adjacency] = M2(robot, q_min, q_max, num_samples, num_neighbors, link_radius, sphere_centers, sphere_radii)
 
+        robot
+
+        qs = M1(q_min, q_max, num_samples);
+
+        num_neighbors
+        link_radius
+        sphere_centers
+        sphere_radii
 end
