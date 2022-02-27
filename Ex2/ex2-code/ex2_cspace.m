@@ -190,13 +190,4 @@ function cspace = ex2_cspace(questionNum, cspace)
         fprintf('Path contains %d collisions.\n', num_collisions);
     end
 
-    %%%%%%%%%%%%%%%%%
-    if questionNum == 8
-        % If pre-computed configuration space is not provided,
-        % compute the configuration space using C2
-        map = C8(cspace);
-        imshow(1 - map');
-        set(gca, 'YDir', 'normal');
-        
-    end
 end

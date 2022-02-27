@@ -42,6 +42,8 @@ function num_collisions = C6(robot, obstacles, q_path)
                                 plot(sweep2, 'FaceColor', 'b');
 
                                 num_collisions = num_collisions + 1;
+                                q_path(i,:)
+                                q_path(i+1,:)
                         end
                 end
         end

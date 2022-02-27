@@ -15,5 +15,75 @@
 %         path_found -> Boolean denoting whether a path was found
 
 function [path, path_found] = M4(robot, q_min, q_max, q_start, q_goal, link_radius, sphere_centers, sphere_radii)
+        
+        % Create the graph
+        possible_path = q_start;
+        vert = 1;
+        edge = [];
+        G = digraph(vert,edge);
 
+        % Rapidly Exploring Random Trees
+        alpha = 0.2;
+        beta = .5;
+        i =  2;
+        path_found = 0;
+        while i<500
+                % Find a new configuration
+                if rand(1) < beta
+                        % goal
+                        q_target = q_goal;
+                else
+                        % random
+                        q_target = M1(q_min, q_max, 1);
+                end
+
+                % Find the closest node
+                dist = sqrt(sum( (possible_path - q_target).^2, 2));
+                [weight, q_near_idx] = min(dist);
+                q_near = possible_path(q_near_idx,:);
+
+                % Step q_new towards target
+                q_new = q_near + alpha * (q_target - q_near) / norm(q_target - q_near);
+                q_new(3) = 0; % q(3) has no range of motion
+
+                % Check if new node is in bounds
+                in_bounds = (all(q_new >= q_min) && all(q_new <= q_max));
+                if in_bounds
+                        % Check for collision
+                        in_collision1 = check_edge(robot, q_near, q_new, link_radius, sphere_centers, sphere_radii);
+                        in_collision2 = check_collision(robot, q_new, link_radius, sphere_centers, sphere_radii);
+
+                        % Add configuration to path if not in collision
+                        if ~or(in_collision1, in_collision2)
+                                G = addedge(G, i, q_near_idx, weight);
+                                possible_path(end+1,:) = q_new;
+                                i = i + 1;
+        
+                                % Check if new node is a clear path and close to goal
+                                xyz = norm( robot.fkine(q_goal).t - robot.fkine(q_new).t );
+                                in_collision = check_edge(robot, q_goal, q_new, link_radius, sphere_centers, sphere_radii);
+                                if and(~in_collision, xyz<0.1)
+                                        possible_path(end+1,:) = q_goal;
+                                        path_found = 1;
+                                        break
+                                end
+                        end
+                end
+        end
+
+        % Descend tree to find path
+        edges = G.Edges.EndNodes;
+        [nodes, ~] = size(G.Nodes);
+        path = q_goal;
+        while nodes ~= 1
+                path(end+1,:) = possible_path(nodes,:);
+                nodes = edges(nodes-1,2);
+        end
+        path(end+1,:) = q_start;
+        path = flipud(path);
+
+        % Plot EF path
+        marker = 'r-';
+        plot_path(path, robot, marker);
+        
 end

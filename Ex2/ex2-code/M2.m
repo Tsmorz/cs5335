@@ -22,12 +22,59 @@
 
 function [samples, adjacency] = M2(robot, q_min, q_max, num_samples, num_neighbors, link_radius, sphere_centers, sphere_radii)
 
-        robot
-
+        % Initial sampling (may contain crashes)
         qs = M1(q_min, q_max, num_samples);
 
-        num_neighbors
-        link_radius
-        sphere_centers
-        sphere_radii
+        samples = qs;
+        sz = [num_samples, num_samples];
+        adjacency = zeros(sz);
+        pos_xyz = ones([num_samples, 3]);
+
+        % Loop through num_samples
+        for i = 1:num_samples
+                q = qs(i,:);
+                [num_spheres, ~] = size(sphere_centers);
+                
+                % Loop through num_spheres
+                for j = 1:num_spheres
+                        sphere_center = sphere_centers(j,:);
+                        sphere_radius = sphere_radii(j);
+                        
+                        % Check for a crash
+                        crash = check_collision(robot, q, link_radius, sphere_center, sphere_radius);
+                        while crash == 1
+                                % Try new q if crash occured
+                                q = M1(q_min, q_max, 1);
+                                crash = check_collision(robot, q, link_radius, sphere_center, sphere_radius);
+                        end
+                        samples(i,:) = q; % save new q to list
+                        pos_xyz(i,:) = robot.fkine(samples(i,:)).t;
+                end
+        end
+
+        % Find nearest neighbors
+        for i = 2:num_samples
+                
+                % Find num_neighbors closest nodes
+                dist_pos = sum( (pos_xyz(1:i-1,:) - pos_xyz(i,:)).^2, 2);
+                dist_qs = sum( (samples(1:i-1,:) - samples(i,:)).^2, 2);
+                A = [1, 2];
+                dist = A(1)*dist_qs + A(2)*dist_pos;
+                [short_path, idx] = mink(dist,num_neighbors);
+
+                for j = 1:length(idx)
+                        q_start = samples(i,:);
+                        q_end = samples(idx(j),:);
+
+                        in_collision = check_edge(robot, q_start, q_end, link_radius, sphere_centers, sphere_radii);
+
+                        if in_collision == 0
+                                adjacency(i,idx(j)) = short_path(j);
+                        end
+                end 
+        end
+
+        % Symmetrize the matrix
+        adjacency = adjacency + adjacency';
+
 end
