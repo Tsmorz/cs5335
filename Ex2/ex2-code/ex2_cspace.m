@@ -166,7 +166,7 @@ function cspace = ex2_cspace(questionNum, cspace)
         %Uncomment to visualize configuration space
         imshow(1 - padded_cspace');
         set(gca, 'YDir', 'normal');
-        pause(5)
+        pause(1)
         distances = C3(padded_cspace, q_grid, q_goal);
         path = C4(distances, q_grid, q_start);
         % Uncomment to visualize distance transform and found path

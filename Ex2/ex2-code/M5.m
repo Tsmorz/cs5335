@@ -19,16 +19,21 @@ function smoothed_path = M5(robot, path, link_radius, sphere_centers, sphere_rad
         while i < n
                 q_start = smoothed_path(i-1,:);
                 q_end = smoothed_path(i+1,:);
+
+                % Check for collision and distance between points
                 dist = norm( robot.fkine(q_start).t - robot.fkine(q_end).t );
-                in_collision = check_edge(robot, q_start, q_end, link_radius, sphere_centers, sphere_radii,20);
+                in_collision = check_edge(robot, q_start, q_end, link_radius, sphere_centers, sphere_radii,50);
+
+                % Remove q from path
                 if and(~in_collision,dist<0.3)
                         smoothed_path(i,:) = [];
                         n = n - 1;
-                        i = i - 1;
+                        i = i - 1; % Loop through an extra time
                 end
                 i = i + 1;
         end
 
+        % Plot smooth path
         plot_path(smoothed_path, robot, 'k-');
 
 end

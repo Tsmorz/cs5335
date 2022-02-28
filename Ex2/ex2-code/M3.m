@@ -26,38 +26,32 @@ function [path, path_found] = M3(robot, samples, adjacency, q_start, q_goal, lin
         % Create graph with adjacency matrix
         G = graph(adjacency);
 
-        % Find closest starting position
+        % Find closest starting and goal positions
         pos_start = robot.fkine(q_start).t';
         [~,idx_start] = min(sum((X-pos_start).^2, 2));
-
-        % Find closest goal position
         pos_goal = robot.fkine(q_goal).t';
         [~,idx_goal] = min(sum((X-pos_goal).^2, 2));
         
         % Find a path
-        path = shortestpath(G, idx_start, idx_goal);
-        if isempty(path)
+        path_idx = shortestpath(G, idx_start, idx_goal);
+        if isempty(path_idx)
                 path_found = 0;
-
-        % Make sure final path is collision free
         else
-                path_found = 1;
-                path = samples(path,:);
+                % Start and end path with q_start and q_goal
+                path = samples(path_idx,:);
+                path = cat(1,q_start,path);
+                path = cat(1,path,q_goal);
 
-                for i = 1:length(path)
-                        q = samples(i,:);
-                        in_collision = check_collision(robot, q, link_radius, sphere_centers, sphere_radii);
-
+                for j = 1:length(path)-1
+                        q_start = path(j,:);
+                        q_end = path(j+1,:);
+                        in_collision = check_edge(robot, q_start, q_end, link_radius, sphere_centers, sphere_radii);
                         if in_collision
-                                path_found = 0;
-                                break
+                                disp('hit')
                         end
                 end
-        end
-
-        % Start and end path with q_start and q_goal
-        path = cat(1,q_start,path);
-        path = cat(1,path,q_goal);
+                path_found = 1;
+        end 
 
         % Plot samples and path
         plot_path(path,robot,'r-')

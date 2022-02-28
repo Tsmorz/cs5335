@@ -22,59 +22,43 @@
 
 function [samples, adjacency] = M2(robot, q_min, q_max, num_samples, num_neighbors, link_radius, sphere_centers, sphere_radii)
 
-        % Initial sampling (may contain crashes)
-        qs = M1(q_min, q_max, num_samples);
+        % Find collision free samples
+        samples = zeros([num_samples, length(q_min)]);
+        i = 1;
+        while i <= num_samples
 
-        samples = qs;
-        sz = [num_samples, num_samples];
-        adjacency = zeros(sz);
-        pos_xyz = ones([num_samples, 3]);
+                % Try a random sample
+                q = M1(q_min, q_max, 1);
+                crash = check_collision(robot, q, link_radius, sphere_centers, sphere_radii);
 
-        % Loop through num_samples
-        for i = 1:num_samples
-                q = qs(i,:);
-                [num_spheres, ~] = size(sphere_centers);
-                
-                % Loop through num_spheres
-                for j = 1:num_spheres
-                        sphere_center = sphere_centers(j,:);
-                        sphere_radius = sphere_radii(j);
-                        
-                        % Check for a crash
-                        crash = check_collision(robot, q, link_radius, sphere_center, sphere_radius);
-                        while crash == 1
-                                % Try new q if crash occured
-                                q = M1(q_min, q_max, 1);
-                                crash = check_collision(robot, q, link_radius, sphere_center, sphere_radius);
-                        end
-                        samples(i,:) = q; % save new q to list
-                        pos_xyz(i,:) = robot.fkine(samples(i,:)).t;
+                % Add to samples if no crash
+                if ~crash
+                        samples(i,:) = q;
+                        i = i + 1;
                 end
         end
 
         % Find nearest neighbors
+        adjacency = zeros(num_samples);
         for i = 2:num_samples
-                
+                q_start = samples(i,:);
+
                 % Find num_neighbors closest nodes
-                dist_pos = sum( (pos_xyz(1:i-1,:) - pos_xyz(i,:)).^2, 2);
-                dist_qs = sum( (samples(1:i-1,:) - samples(i,:)).^2, 2);
-                A = [1, 2];
-                dist = A(1)*dist_qs + A(2)*dist_pos;
-                [short_path, idx] = mink(dist,num_neighbors);
+                dist = sum( (samples(1:i-1,:) - q_start).^2, 2);
+                [cost, idx] = mink(dist,num_neighbors);
 
+                % Check for collision along edge
                 for j = 1:length(idx)
-                        q_start = samples(i,:);
                         q_end = samples(idx(j),:);
-
                         in_collision = check_edge(robot, q_start, q_end, link_radius, sphere_centers, sphere_radii);
 
-                        if in_collision == 0
-                                adjacency(i,idx(j)) = short_path(j);
+                        if ~in_collision
+                                adjacency(i,idx(j)) = cost(j);
                         end
                 end 
         end
 
-        % Symmetrize the matrix
+        % Symmetrize the adjacency matrix
         adjacency = adjacency + adjacency';
 
 end

@@ -24,7 +24,7 @@ function [path, path_found] = M4(robot, q_min, q_max, q_start, q_goal, link_radi
 
         % Rapidly Exploring Random Trees
         alpha = 0.2;
-        beta = .5;
+        beta = 0.5;
         i =  2;
         path_found = 0;
         while i<500
@@ -50,22 +50,23 @@ function [path, path_found] = M4(robot, q_min, q_max, q_start, q_goal, link_radi
                 in_bounds = (all(q_new >= q_min) && all(q_new <= q_max));
                 if in_bounds
                         % Check for collision
-                        in_collision1 = check_edge(robot, q_near, q_new, link_radius, sphere_centers, sphere_radii);
-                        in_collision2 = check_collision(robot, q_new, link_radius, sphere_centers, sphere_radii);
+                        in_collision = check_edge(robot, q_near, q_new, link_radius, sphere_centers, sphere_radii);
 
                         % Add configuration to path if not in collision
-                        if ~or(in_collision1, in_collision2)
+                        if ~in_collision
                                 G = addedge(G, i, q_near_idx, weight);
                                 possible_path(end+1,:) = q_new;
                                 i = i + 1;
         
-                                % Check if new node is a clear path and close to goal
+                                % break once a node has a clear path to end
                                 xyz = norm( robot.fkine(q_goal).t - robot.fkine(q_new).t );
-                                in_collision = check_edge(robot, q_goal, q_new, link_radius, sphere_centers, sphere_radii);
-                                if and(~in_collision, xyz<0.1)
-                                        possible_path(end+1,:) = q_goal;
-                                        path_found = 1;
-                                        break
+                                if xyz<=0.4
+                                        in_collision = check_edge(robot, q_goal, q_new, link_radius, sphere_centers, sphere_radii,50);
+                                        if and(~in_collision, xyz<0.2)
+                                                possible_path(end+1,:) = q_goal;
+                                                path_found = 1;
+                                                break
+                                        end
                                 end
                         end
                 end
@@ -79,6 +80,8 @@ function [path, path_found] = M4(robot, q_min, q_max, q_start, q_goal, link_radi
                 path(end+1,:) = possible_path(nodes,:);
                 nodes = edges(nodes-1,2);
         end
+
+        % Add starting position to path
         path(end+1,:) = q_start;
         path = flipud(path);
 
