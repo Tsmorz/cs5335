@@ -13,7 +13,7 @@ Ex2 - Planning
 ```
 ex2(<question number>)
 ```
-<img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg>
+<img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="50%" height="50%">
 Ex3 - State Estimation
 ```
 ex3(<question number>)
