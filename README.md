@@ -16,8 +16,8 @@ ex2(<question number>)
 <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="50%" height="50%">
 <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="50%" height="50%">
 <p float="left">
-  <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="50%" height="50%" />
-  <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="50%" height="50%" />
+  <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="30%" height="30%" />
+  <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="30%" height="30%" />
 </p>
 
 Ex3 - State Estimation
