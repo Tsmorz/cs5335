@@ -1,4 +1,4 @@
-# cs5335
+# cs5335 - Northeastern University - Spring 2022
 Robotic Science and Systems - Spring 2022\
 Lawson Wong\
 \
