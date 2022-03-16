@@ -7,6 +7,7 @@ Introduces autonomous mobile robots with a focus on algorithms and software deve
 ## Ex0 - short essay
 
 ## Ex1 - Inverse Kinematics
+Determine joint angles given an x-y-z location for the end effector.
 ```
 ex1(<question number>)
 ```
