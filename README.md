@@ -15,7 +15,12 @@ ex2(<question number>)
 ```
 
 <p float="left">
+  <img src=https://user-images.githubusercontent.com/83112082/158668559-ebab7fe4-a380-4c13-92fc-21d803198be0.jpg width="30%" height="30%" />
   <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="30%" height="30%" />
+</p>
+
+<p float="left">
+  <img src=https://user-images.githubusercontent.com/83112082/158668559-ebab7fe4-a380-4c13-92fc-21d803198be0.jpg width="30%" height="30%" />
   <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="30%" height="30%" />
 </p>
 
