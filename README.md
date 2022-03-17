@@ -14,17 +14,20 @@ ex1(<question number>)
 ```
 ex2(<question number>)
 ```
+Workspace to configuration space mapping.
 <p float="left">
   <img src=https://user-images.githubusercontent.com/83112082/158668559-ebab7fe4-a380-4c13-92fc-21d803198be0.jpg width="30%" height="30%" />
   <img src=https://user-images.githubusercontent.com/83112082/158668548-3fb72662-e8ad-4322-95cb-1cd74bcbe1d1.jpg width="30%" height="30%" />
 </p>
 
+Interesting designs created from mapping joint angles to x-y coordinates.
 <p float="left">
   <img src=https://user-images.githubusercontent.com/83112082/158668640-b2e6bdf7-d4fa-41d5-8e5d-80ed34b7555c.png width="30%" height="30%" />
   <img src=https://user-images.githubusercontent.com/83112082/158668664-52769f2a-858a-4f0f-a528-c9c353e601a4.png width="30%" height="30%" />
   <img src=https://user-images.githubusercontent.com/83112082/158668677-74d13d94-64df-43e0-ab2e-0aaa3b258fa6.png width="30%" height="30%" />
 </p>
 
+Planning around obstacles with Rapidly Exploring Random Trees. \
 <img src=https://user-images.githubusercontent.com/83112082/158675364-2651af1e-9b75-4b3f-ba92-cb1c708f421e.jpg width="50%" height="50%" >
 
 
