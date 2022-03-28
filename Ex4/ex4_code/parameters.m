@@ -1,6 +1,6 @@
 % Load EKF-SLAM parameters
 
-function [V, W, x0, P0, range, fov, T, num_trials] = parameters()
+function [V, W, x0, P0, range, fov] = parameters()
     
     % Process noise
     V = diag([0.02 0.5*pi/180].^2);
@@ -14,9 +14,5 @@ function [V, W, x0, P0, range, fov, T, num_trials] = parameters()
     range = 4;
     % Field of view of sensor
     fov = [-pi/2 pi/2];
-    % Number of timesteps
-    T = 1000;
-    % Number of trials to run
-    num_trials = 1;
     
 end
