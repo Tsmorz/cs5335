@@ -79,7 +79,8 @@ function [x_est, P_est] = E1(odo, zind, z, V, W, x0, P0, map)
                         P_est(end+1) = {P_pred};
                 end
 
-
         end
+        x_est = x_est(2:end);
+        P_est = P_est(2:end);
 
 end

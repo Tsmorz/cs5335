@@ -101,7 +101,7 @@ function [ekf_l, ekf_m, ekf_s] = ex4_slam(questionNum, ekf_l, ekf_m, ekf_s)
     if questionNum == 6
         load('e2.mat');
         % TODO: Design trajectories that lead to better SLAM performance
-        [x_truth, odo_truth] = E6(x0, T);
+        [x_truth, odo_truth] = E6(x0, T, map_m);
         if max(odo_truth(1,:)) > 0.1
             disp('Error: Single-step translation exceeds 0.1');
         end

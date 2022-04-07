@@ -13,28 +13,59 @@
 
 function [ekf_l, ekf_m, ekf_s] = E0(V, W, x0, P0, range, fov)
 
-        % Localization
+        t = 1000;
+
         rng(0)
         map = LandmarkMap(20);
+
+        % Localization
         veh = Bicycle('covar', V, 'x0', x0);
         veh.add_driver( RandomPath(map.dim) );
         sensor = RangeBearingSensor(veh, map, 'covar', W, 'angle',...
                 fov, 'range', range, 'animate');
         ekf_l = EKF(veh, V, P0, sensor, W, map);
-        ekf_l.run(1000);
+        ekf_l.run(t);
+
         map.plot();
         veh.plot_xy();
         ekf_l.plot_xy('r');
-        ekf_l.plot_ellipse('k')
+        ekf_l.plot_ellipse('k');
+
+        visualize({}, {}, [], map, veh, 'n', []);
+        pause(1)
+
+
+        % Mapping
+        veh = Bicycle();
+        veh.add_driver( RandomPath(map.dim) );
+        sensor = RangeBearingSensor(veh, map, 'covar', W);
+        ekf_m = EKF(veh, [], [], sensor, W, []);
+        ekf_m.run(t);
+
+        map.plot();
+        ekf_m.plot_map('g');
+        veh.plot_xy('b');
+
+        visualize({}, {}, [], map, veh, 'n', []);
+        pause(1)
+
+
+        % SLAM
+        veh = Bicycle('covar', V);
+        veh.add_driver( RandomPath(map.dim) );
+        sensor = RangeBearingSensor(veh, map, 'covar', W);
+        ekf_s = EKF(veh, V, P0, sensor, W, []);
+        ekf_s.run(t);
+
+        map.plot();
+        ekf_s.plot_map('g');
+        ekf_s.plot_xy('r');
+        veh.plot_xy('b');
+
 
         % After creating a map and vehicle, and running the Robotics toolbox
         % EKF, running the following line should produce Figure 1.
         % If it does not, you may have forgotten to reset the random seed to 0.
         visualize({}, {}, [], map, veh, 'n', []);
-        
-        % Mapping
-        ekf_m = ekf_l;
-        
-        % SLAM
-        ekf_s = ekf_l;
+        pause(1)
 end

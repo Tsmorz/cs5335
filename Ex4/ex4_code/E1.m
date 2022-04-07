@@ -21,7 +21,7 @@ function [x_est, P_est] = E1(odo, zind, z, V, W, x0, P0, map)
         P_est = {P0};
 
         % Loop through all readings
-        for i = 1:length(odo)
+        for i = 2:length(odo)
                 %% Prediction Step
                 x_current = x_est{end};
                 x = x_current(1);
@@ -34,11 +34,12 @@ function [x_est, P_est] = E1(odo, zind, z, V, W, x0, P0, map)
                 X_pred = [x + dx*cos(heading);
                                 y + dx*sin(heading);
                                 angdiff(heading, -dtheta)];
-                Fx = [1, 0, -dx*sin(V(2,2));
-                        0, 1, dx*cos(V(2,2));
+
+                Fx = [1, 0, -dx*sin(heading);
+                        0, 1, dx*cos(heading);
                         0, 0, 1];
-                Fv = [cos(V(2,2)), 0;
-                        sin(V(2,2)), 0;
+                Fv = [cos(heading), 0;
+                        sin(heading), 0;
                         0, 1];
 
                 P_pred = Fx*P_est{end}*Fx.' + Fv*V*Fv.';
@@ -65,21 +66,16 @@ function [x_est, P_est] = E1(odo, zind, z, V, W, x0, P0, map)
                         % kalman gain
                         S = Hx*P_pred*Hx.' + Hw*W*Hw.';
                         K = P_pred*Hx.' / S;
-
      
                 %% Update Step
                         % update with sensor reading
                         x_est(end+1) = {X_pred + K*nu};
                         P_est(end+1) = {P_pred - K*Hx*P_pred};
 
-
                 else
                         % update with only odometry
                         x_est(end+1) = {X_pred};
                         P_est(end+1) = {P_pred};
                 end
-
-
         end
-
 end

@@ -60,12 +60,12 @@ function [x_est, P_est, indices] = E2(odo, zind, z, W, x0)
 
                         % Sensor readings
                         measurement = z{i};
-                        range = measurement(1);
+                        r = measurement(1);
                         bearing = measurement(2);
 
                         % Predict landmark location
-                        x_pred = [x + range * cos(angdiff(heading, -bearing));
-                                        y + range * sin(angdiff(heading, -bearing))];
+                        x_pred = [x + r * cos(angdiff(heading, -bearing));
+                                        y + r * sin(angdiff(heading, -bearing))];
 
 %                         % plotting landmark measurement
 %                         plot(x_pred(1), x_pred(2), 'r.')
@@ -90,8 +90,8 @@ function [x_est, P_est, indices] = E2(odo, zind, z, W, x0)
                                 %% Insertian Jacobian
                                 % Covariance Update
                                 ang = angdiff(heading, -bearing);
-                                Gz = [cos(ang), -range*sin(ang);
-                                           sin(ang),  range*cos(ang)];
+                                Gz = [cos(ang), -r*sin(ang);
+                                           sin(ang),  r*cos(ang)];
 
                                 n = length(new);
                                 if n > 2
@@ -124,7 +124,7 @@ function [x_est, P_est, indices] = E2(odo, zind, z, W, x0)
                                 xdiff = land_x - x;
                                 ydiff = land_y - y;
                                 r = sqrt(sum(xdiff^2 + ydiff^2));
-                                ang = angdiff(atan2(ydiff, xdiff) - heading);
+                                ang = angdiff(atan2(ydiff, xdiff), heading);
 
                                 % Jacobian of (r, β) with respect to landmark position (xi , yi)
                                 Hp = [xdiff/r,     ydiff/r;
@@ -134,7 +134,9 @@ function [x_est, P_est, indices] = E2(odo, zind, z, W, x0)
 
                                 %% Update Step
                                 % innovation
-                                nu = z{i} - [r; ang];
+                                z_sharp = z{i};
+                                nu = [z_sharp(1) - r;
+                                        angdiff(z_sharp(2), ang)];
 
                                 % kalman gain
                                 Hw = eye(2);
