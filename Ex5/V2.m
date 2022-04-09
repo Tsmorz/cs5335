@@ -1,77 +1,126 @@
-% Tony Smoragiewicz
+%% Tony Smoragiewicz
 % V2 - ICP algorithm
-
-close all
 
 file = 'ex5_data/bunny.mat';
 M = loadScan(file);
 
-figure(1)
-rpy = 180*rand([1,3]);
-rot = SE3.rpy(rpy);
-tran = rand([3,1]);
-test = rot * M + tran;
-[R, t] = ICP(M, test);
+close all
 
-figure(2)
-test = rot * (M + 0.01*rand(size(M))) + tran;
-[R, t] = ICP(M, test);
- 
-figure(3)
 [r, c] = size(M);
-[R, t] = ICP( M(:,1:c-20), M(:,21:c));
 
-ptCloud = M;
-point = M(:,1)'
-K = 1;
-[indices,dists] = findNearestNeighbors(ptCloud,point,K);
+limit = 100;
+M1 = M(:,1:end-limit);
+
+mismatch = M(:,limit:end);
+
+noise = 0.0001*rand(size(mismatch));
+
+tran = rand([3,1])/10;
+
+rpy = 90*rand([1,3]);
+rot = SE3.rpy(rpy);
+
+M2 = rot*mismatch+tran + noise;
+[R, t] = ICP(M1, M2);
+
+
+
+
+% Find closest point
+function [model, input] = closestCloud(original1, original2)
+
+        % check data set sizes for comparison
+        original1 = original1';
+        original2 = original2';
+        [r1, c1] = size(original1);
+        [r2, c2] = size(original2);
+
+        % different number of points
+        if r1 ~= r2
+                if r1 > r2
+                        rows = randperm(r1, r2);
+                        model = original1(rows,:);
+                        input = original2;
+
+                else % r1 < r2
+                        rows = randperm(r2, r1);
+                        input = original2(rows,:);
+                        model = original1;
+                end
+        else
+                model = original1;
+                input = original2;
+        end
+
+        % loop through smallest number of rows
+        r = min([r1, r2]);
+        idx = zeros([r, 2]);
+        for i = 1:r
+                point = model(i,:);
+                diffsq = (input - point).^2;
+                distance = sqrt(sum(diffsq, 2));
+                loc = find(distance == min(distance));
+                idx(i,:) = [i, loc];
+        end
+
+%         figure(1)
+%         clf
+%         axis('equal')
+%         view(0, 90)
+%         hold on
+%         plotData(model', 'b.')
+%         plotData(input', 'ro')
+
+        input = input(idx(:,2),:);
+
+end
+
 
 % Iterative Closest Point alg. for point clouds
 function [R, t] = ICP(X, P)
 
-        % subtract mean from point cloud
-        mu_x = mean(X, 2);
-        Xt = X - mu_x;
-
-        Y = P;
-        for i = 1:5
-                mu_y = mean(Y, 2);
-                Yt = Y - mu_y;
-        
+        if size(X) == size(P)
+                %[model, new] = closestCloud(X, P);
+                Xt = X - mean(X,2);
+                Yt = P - mean(P,2);
                 W = Xt * Yt';
-        
-                % SVD on mean centered point cloud
                 [U, S, V] = svd(W);
-                eigen = [S(1,1), S(2,2), S(3,3)];
-
+                %eigen = [S(1,1), S(2,2), S(3,3)];
                 R = U*V';
-                t = mu_x - R*mu_y;
-                Y = R*Y + t;
-                imatch(Xt, Y)
+                t = mean(X,2) - R*mean(P,2);
+        else
+                for i = 1:200
+                        clf;
+                        Y = P;
+                        [model, new] = closestCloud(X, Y);
+                        
+                        W = model' * new;
+                
+                        % SVD on mean centered point cloud
+                        [U, S, V] = svd(W);
+        
+                        R = U*V';
+                        t = mean(model,1)' - R*mean(new,1)';
+                        Yt = R*new' + t;
 
-                [~, N] = size(X);
-                E = 1/N * sum( norm(Xt - Y).^2 )
-                minE = sum(norm(Xt)^2 + norm(Yt)^2) - 2*(sum(eigen))
+                        [N, ~] = size(model);
+                        E = 1/N * sum( vecnorm(model' - Yt).^2 );
+                        P = R*P + t;
 
+
+                        hold off
+                        axis('equal')
+                        view(0, 90)
+                        hold on
+                        plotData(X, 'b.')
+                        plotData(P, 'ro')
+                        pause(0.001)
+                end
+     
 
         end
 
-        subplot(1,2,1)
-        axis('equal')
-        view(0, 90)
-        hold on
-        plotData(X, 'b.')
-        plotData(P, 'ro')
-        
-        subplot(1,2,2)
-        axis('equal')
-        view(0, 90)
-        hold on
-        plotData(X, 'b.')
-        plotData(Y, 'ro')
-
 end
-
 
 %% Load model
 function model = loadScan(file)

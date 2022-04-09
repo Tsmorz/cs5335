@@ -2,6 +2,8 @@
 % V3 - RANSAC
 
 close all
+clear all
+
 format short
 format compact
 w = warning ('off','all');
@@ -9,55 +11,56 @@ w = warning ('off','all');
 file = 'ex5_data/ptcloud.mat';
 [xyz, rgb] = loadScan(file);
 xyz = unwrap(xyz);
+original = xyz;
 
 % inliers = [mod(idx, r), ceil(idx/r)];
 
 
 %% Find image planes
-figure(2)
-subplot(2,1,1)
+input('Find walls in the point cloud.')
+figure(1)
 view(-45, 30)
+axis('equal')
 hold on
 plot3(xyz(:,1), xyz(:,2), xyz(:,3), 'b.')
-axis('equal')
 
-subplot(2,1,2)
-view(-45, 30)
-axis('equal')
-hold on
 
-e = [0.65, 0.65, 0.65];
-s = 3;
+e = [0.70, 0.70, 0.70];
+s = 'plane';
 threshold = 0.01;
 % search for three planes
 for i = 1:3
-        sample = 0.008;
-        [inliers, ~] = RANSAC(xyz, e(i), s, threshold, sample);
+        [inliers, model] = RANSAC(xyz, e(i), s, threshold);
+        disp('The plane contains the point:')
+        disp(model(2,:))
+        disp('The normal vector is:')
+        disp(model(1,:))
+        disp(' ')
 
         plane = xyz(inliers, :);
         plot3(plane(:,1), plane(:,2), plane(:,3), '.', 'Color', rand([1,3]) )
+%         quiver3(xyz0(1), xyz0(2), xyz0(3), 0.15*n(1), 0.15*n(2), 0.15*n(3), 'k')
+%         quiver3(xyz0(1), xyz0(2), xyz0(3), -0.15*n(1), -0.15*n(2), -0.15*n(3), 'k')
 
         % remove plane from data set
         xyz(inliers, :) = NaN;
 end
-plot3(xyz(:,1), xyz(:,2), xyz(:,3), 'b.')
-
-
-
-%% Sort k-Objects in scene
-% [num, idx] = numObjects(xyz);
-% for i = 1:num
-%         loc =  find(idx==i)';
-%         plot3(xyz(loc,1), xyz(loc,2), xyz(loc,3), '.', 'Color', rand([1,3]))
-% end
 
 
 %% Find the sphere
-e = 0.95;
-s = 1;
+input('Find the ball in the point cloud.')
+e = 0.70;
+s = 'sphere';
 threshold = 0.005;
-sample = 1;
-[~, model] = RANSAC(xyz, e, s, threshold, sample);
+[inliers, model] = RANSAC(xyz, e, s, threshold);
+plot3(xyz(inliers,1), xyz(inliers,2), xyz(inliers,3), 'c.')
+xyz(inliers, :) = NaN;
+
+disp('The center is at:')
+disp(model(2:4))
+disp('The radius is:')
+disp(model(1))
+disp(' ')
 
 [X, Y, Z] = sphere;
 X2 = X*model(1);
@@ -65,13 +68,23 @@ Y2 = Y*model(1);
 Z2 = Z*model(1);
 surf(X2+model(2), Y2+model(3), Z2+model(4))
 
-
 %% Find the wipes
-e = 0.95;
-s = 2;
-threshold = 0.0051;
-sample = 1;
-[inliers, model] = RANSAC(xyz, e, s, threshold, sample);
+input('Find the cylinder in the point cloud.')
+e = 0.7;
+s = 'tube';
+threshold = 0.005;
+[inliers, model] = RANSAC(xyz, e, s, threshold);
+plot3(xyz(inliers,1), xyz(inliers,2), xyz(inliers,3), 'k.')
+xyz(inliers, :) = NaN;
+[X,Y,Z] = cylinder(model(3,1));
+surf(X+model(1,1), Y+model(1,2), 0.3*Z, 'FaceColor', 'y')%+model(1,3))
+
+disp('The center is at:')
+disp(model(1,:))
+disp('The normal vector is:')
+disp(model(2,:))
+disp('The radius is:')
+disp(model(3,1))
 
 
 %% Random u,v coordinate with real xyz value
@@ -105,41 +118,9 @@ function [normal, ratio] = eigenNorm(point, radius, xyz)
 
         ratio = min(lambda) / max(lambda);
         %plot3(points(:,1), points(:,2), points(:,3), 'g.')
-        quiver3(point(1), point(2), point(3), 0.15*normal(1), 0.15*normal(2), 0.15*normal(3), 'g')
-        quiver3(point(1), point(2), point(3), -0.15*normal(1), -0.15*normal(2), -0.15*normal(3), 'g')
+        %quiver3(point(1), point(2), point(3), 0.15*normal(1), 0.15*normal(2), 0.15*normal(3), 'g')
+        %quiver3(point(1), point(2), point(3), -0.15*normal(1), -0.15*normal(2), -0.15*normal(3), 'g')
 end
-
-
-%% Identify number of objects in scene
-function [num, idx] = numObjects(data)
-
-        maxNum = 10;
-        value = zeros([maxNum-1,1]);
-        for K = 2:maxNum
-                [~, C] = kmeans(data, K);
-        
-                dist = zeros([K-1,1]);
-                for i = 1:K
-                        tmp = zeros([K-1,1]);
-                        for j = 1:K
-                                tmp(j) = norm(C(i,:) - C(j,:));
-                        end
-                        tmp(i) = max(tmp);
-                        dist(i) = min(tmp);
-                end
-                value(K-1) = K^2*min(dist)^3;
-        end
-        
-        idx = find(value == max(value));
-        K = idx+1;
-        [idx, C] = kmeans(data, K);
-        for i = 1:K
-                plot3(C(i,1), C(i,2), C(i,3), 'c*')
-        end
-       
-        num = K;
-end
-
 
 %% Unwrap sensor matrix to a row
 function row_vec = unwrap(data)
@@ -157,7 +138,6 @@ function row_vec = unwrap(data)
 
 end
 
-
 %% Alternate surface normal given 3 points
 function [normal, xyz] = surfaceNormal(xyz)
         U = xyz(2,:) - xyz(1,:);
@@ -170,21 +150,25 @@ end
 % inliers = RANSAC(data, e, s, threshold):
 % e - portion outliers
 % s - num of points in sample
-function [inliers, model] = RANSAC(data, e, s, threshold, sample)
+function [inliers, model] = RANSAC(data, e, s, threshold)
 
-        % Add a column of 1's to the end
-        [r, c] = size(data);
+        % # of rows with real entries
         realPoints = sum(~isnan(data(:,1)));
 
-        % num of points to compare against from data set
-        subset = round(sample*realPoints);
+        % Stop search when this number has been reached
+        T = (1-e)*realPoints;
         
         % number of samples needed
         p = 0.99;
-        N = round( log(1-p) / log(1-(1-e)^s) );
-        
-        % Stop search when this number has been reached
-        T = sample * (1-e)*realPoints;
+        if strcmp(s, 'plane')
+                variables = 3;
+        elseif strcmp(s, 'sphere')
+                variables = 2;
+        else
+                variables = 3;
+        end
+
+        N = round( log(1-p) / log(1-(1-e)^variables) );
         
         % Number of points within threshold distance
         num = 0;
@@ -192,104 +176,100 @@ function [inliers, model] = RANSAC(data, e, s, threshold, sample)
         i = 1;
         while i < N
                 % try a random set points that fits the model
-                xyz = zeros([s, c]);
+                xyz = zeros([variables, 3]);
                 j = 1;
-                while j <= s
+                while j <= variables
                         point = randPoint(data);
-                        if ~isnan(point)
-                                xyz(j,:) = point;
-                                j = j + 1;
-                        end
+                        xyz(j,:) = point;
+                        j = j + 1;
                 end
-                if s == 1
-                        % find surface normal
-                        [n, ~] = eigenNorm(point, 0.01, data);
+                if strcmp(s, 'sphere')
+                        % find surface normal from random point
+                        [n, ~] = eigenNorm(xyz(1,:), 0.01, data);
 
                         r_min = 0.05;
                         r_max = 0.10;
                         offset = r_max - r_min;
-                        noise = 2*offset*rand(1) - 2*offset/2;
+                        noise = offset*rand(1)/2;
                         radius = (r_max + r_min)/2 + noise;
-                        center = point + radius*n;
 
+                        % center of sphere is distance r from random point along
+                        % normal vector
+                        center = xyz(1,:) + radius*n;
+
+                        % distance from center to all points
                         dist = sqrt( sum( (data-center).^2, 2 ) );
+
+                        % points inside outer radius
                         outer = dist <= radius + threshold;
+
+                        % points inside inner radius
                         inner = dist <= radius - threshold;
 
-                        if sum(and(outer, not(inner))) > num
-                                num = sum(and(outer, not(inner)));
-                                xyz0 = center;
+                        % number of points within the outer/inner shell
+                        count = sum(and(outer, not(inner)));
+                        if count > num
+                                num = count;
                                 model = [radius, center];
-                                points = and(outer, not(inner));
+                                inliers = and(outer, not(inner));
                         end
 
-                elseif s == 2
+                elseif strcmp(s, 'tube')
                         [n1, ~] = eigenNorm(xyz(1,:), 0.01, data);
                         [n2, ~] = eigenNorm(xyz(2,:), 0.01, data);
-                        vec = cross(n1,n2);
+                        n = cross(n1,n2);
+                        n = n / norm(n);
+    
+                        r_min = 0.05;
+                        r_max = 0.10;
+                        offset = r_max - r_min;
+                        noise = offset*rand(1)/2;
+                        radius = (r_max + r_min)/2 + noise;
 
-                        if abs(max(c)) > 0.9
-                                % pipe along vector
-                                r_min = 0.05;
-                                r_max = 0.10;
-                                offset = r_max - r_min;
-                                noise = 2*offset*rand(1) - 2*offset/2;
-                                radius = (r_max + r_min)/2 + noise;
+                        % center of sphere is distance r from random point along
+                        % normal vector
+                        point = xyz(1,:);
+                        center = point + radius*n1;
+
+                        % dist point on surface to center
+                        r2c = data - center;
+                        n_mat = repmat(n, [length(r2c),1]);
+                        dist = cross(r2c', n_mat')';
+                        dist = sqrt(sum(dist.^2,2));
+
+                        % points inside shell of chosen radius
+                        outer = dist <= radius + threshold;
+                        inner = dist <= radius - threshold;
+                        count = and(outer, not(inner));
+
+                        if sum(count) > num
+                                num = sum(count);
+                                inliers = count;
+                                model = [center; n; radius, 0, 0];
                         end
-                        
+
                 else
                         % find the surface normal of the plane
-                        [temp_n, temp_xyz0] = surfaceNormal(xyz);
-        
-                        temp_xyz = zeros([subset, 4]);
-                        for k = 1:subset
-                                point = NaN;
-                                while isnan(point)
-                                        % try a random point
-                                        idx = randi(r);
-                                        point = data(idx, :);
-                                end
-                                temp_xyz(k,:) = cat(2, idx, point);
-                        end
-                        dist = abs( (temp_xyz(:,2:end) - temp_xyz0) * temp_n');
-                        temp_num = length(find(dist<=threshold));
+                        [n, point] = surfaceNormal(xyz);
+                        dist = abs( (data - point) * n');
+                        count = length(find(dist<=threshold));
         
                         % save new data
-                        if temp_num > num
-                                num = temp_num;
-                                xyz0 = temp_xyz0;
-                                n = temp_n;
-                                if num >= T
-                                        break
-                                end
+                        if count > num
+                                num = count;
+                                model = [n; point];
+                                inliers = find(dist <= 1.5*threshold);
                         end
                 end
 
+                if num >= T
+                        break
+                end
                 % increment counter
                 i = i + 1;
         end
-        if s == 1
-                plot3(data(points,1), data(points,2), data(points,3), 'c.')
-                plot3(model(2), model(3), model(4), 'r.')
-                sum(points)/length(data)
-                inliers = points;
-        elseif s == 2
-
-        else
-                num / subset
-        
-                % calculate distance to all points
-                distance = abs( (data - xyz0) * n' );
-        
-                % Double threshold and identify points on plane
-                inliers = find(distance <= 1.5*threshold);
-        
-                % plot the best points
-                quiver3(xyz0(1), xyz0(2), xyz0(3), 0.15*n(1), 0.15*n(2), 0.15*n(3), 'r')
-                quiver3(xyz0(1), xyz0(2), xyz0(3), -0.15*n(1), -0.15*n(2), -0.15*n(3), 'r')
-                model = n;
-        end
-
+        1 - num / realPoints
+        i/N
 end
 
 %% Load model
