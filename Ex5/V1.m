@@ -11,29 +11,28 @@ function V1()
         
         v = VideoReader('ex5_data/book.webm');
         frames= read(v);
-
-        [r, c, ch, num] = size(frames);
-        frames = frames(:, :, :, 1:18:num);
-        frame = frames(:,:,:,1);
-        frame = rgb2gray(frame);
-        frame = shrink(frame, max_dim);
+        [~, ~, ~, num] = size(frames);
+        frames = frames(:, :, :, 1:10:num);
 
         sf0 = isurf(book);
-        sf1 = isurf(frame);
-        [m, corresp] = match(sf0, sf1, 'top', 20);
-
+         [~, ~, ~, num] = size(frames);
+        for i = 2:num
+                frame = rgb2gray(frames(:,:,:,i));
+                frame = shrink(frame, max_dim);
+                sf1 = isurf(frame);
+                [m, corresp] = match(sf0, sf1, 'top', 50);
+        
+                [H, in] = m.ransac(@homography, 4);
+                H
+        
+%                 figure(2)
+%                 homwarp(inv(H), frame, 'full')
+                homwarp(H, book, 'full')
+                sf0 = isurf(frame);
+        end
         figure(1)
         idisp({book, frame})
         m.subset(100).plot('w')
-
-        [H, in] = m.ransac(@homography, 4);
-
-        figure(2)
-        homwarp(inv(H), frame, 'full')
-
-        figure(3)
-        homwarp(H, book, 'full')
-
 
 end
 

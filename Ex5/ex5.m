@@ -18,16 +18,14 @@ function [] = ex5(questionNum)
         
         % ========== Question M0 ==========
         if questionNum == 0
-
+                opt();
         end
         
-
         % ========== Question M1 ==========
         if questionNum == 1
-
+                V1();
         end
         
-
         % ========== Question M2 ==========
         if questionNum == 2
 
@@ -35,30 +33,106 @@ function [] = ex5(questionNum)
                 file = 'ex5_data/bunny.mat';
                 data = load(file);
                 data = struct2cell(data);
-                model = data{:};
+                M = data{:};
+
+                % force matrix to be horizontal
+                [r, c] = size(M);
+                if r > c
+                        M = M';
+                        [r, c] = size(M);
+                end
+                
+                % apply random transformation
+                M1 = M;
+                M2 = M;
+
+                % add noise
+                M2 = M2 + 0.00001*rand(size(M2));
+
+                % apply transform
+                t = 1/5 * rand([3, 1]);
+                rpy = 45* rand([1,3]);
+                R = rpy2rot(rpy);
+                M2 = R * M2 + t;
+
+                % remove some points
+                num = 0;
+                M1 = M1(:, 1:end-num);
+                M2 = M2(:, 1+num:end);
+
+                disp('The initial tranformation is...')
+                initial = eye(4);
+                initial(1:3, 1:3) = R;
+                initial(1:3, 4) = t;
+                disp(initial)
+                
+
+                f = figure(1);
+                movegui(f, 'northwest')
+
+                steps = 100;
+                E = zeros([steps,1]);
+                Tfinal = eye(4);
+                ts = zeros([steps, 3]);
+                for i = 1:steps
+
+                        [R, t, error, dist] = ICP(M1, M2);
+                        M2 = R*M2 + t; 
+                        E(i) = error;
+
+                        % plot point cloud
+                        clf;
+                        subplot(2, 2, [1 3])
+                        hold on
+                        axis('equal')
+                        view(0, 90)
+                        plotData3(M1, 'b.')
+                        plotData3(M2, 'r.')
         
-                angle = 5;
-                distance = 0.5;
-                variance = 0.000;
-                nonoverlap = 1;
-                disp('Find proper transform...')
+                        % plot error
+                        subplot(2,2,2)
+                        semilogy(E(1:i))
+                        ylabel('Error Value')
+                        if i > 1
+                                ylim([min(E(1:i)), max(E)])
+                        end
+                        xlabel('ICP Iterations')
         
-                formatSpec = 'Maximum starting rotation is %3.0f degrees.\n';
-                fprintf(formatSpec, angle)
-                formatSpec = 'Maximum starting translation is %3.2f meters.\n';
-                fprintf(formatSpec, distance)
-                formatSpec = 'Maximum added noise is %3.3f m^2.\n';
-                fprintf(formatSpec, variance)
-                formatSpec = 'Models are missing %3d points each.\n';
-                fprintf(formatSpec, nonoverlap)
-        
-                T = V2(model, angle, distance, variance, nonoverlap);
+                        % plot histogram of closest point distances
+                        subplot(2,2,4)
+                        histogram(dist, 30)
+                        set(gca,'YScale','log')
+                        xlim([0, max(dist)+0.01])
+                        xlabel('Distance to closest point')
+
+                        hold off
+                        drawnow
+
+                        T = eye(4);
+                        T(1:3, 1:3) = R;
+                        T(1:3, 4) = t;
+                        Tfinal = T*Tfinal;
+                        ts(i,:) = t;
+
+                        if E(i) < 0.000001
+                                break
+                        end
+                end
+
                 disp('The final tranformation is...')
-                disp(T)
-        
+                final = inv(Tfinal);
+                disp(final)
+
+                sumt = cumsum(ts, 1);
+
+%                 figure(2)
+%                 hold on
+%                 plot(sumt(:,1))
+%                 plot(sumt(:,2))
+%                 plot(sumt(:,3))
+
         end
         
-
         % ========== Question M3 ==========
         if questionNum == 3
                 file = 'ex5_data/ptcloud.mat';
@@ -66,11 +140,9 @@ function [] = ex5(questionNum)
                 V3(xyz);
         end
         
-
         % ========== Question M4 ==========
         if questionNum == 4
-
+                pcloud();
         end
-
 
 end

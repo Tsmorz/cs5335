@@ -1,56 +1,73 @@
-function [t_final] = ICP(X, P)
+function [R, t, error, distances] = ICP(X, P)
 %ICP Summary of this function goes here
 %   Detailed explanation goes here
 
-        t_final = eye(4);
-        T = eye(4);
-        E = zeros([1,200]);
+        [model, new, distances] = closestCloud(X, P);
         
-        for i = 1:200
-                clf;
-                Y = P;
-                [model, new] = closestCloud(X, Y);
-                
-                W = model' * new;
-                [U, S, V] = svd(W);
-                R = U*V';
-                t = mean(model,1)' - R*mean(new,1)';
+        W = model' * new;
+        [U, S, V] = svd(W);
 
-                % track final transformation
-                T(1:3, 1:3) = R;
-                T(1:3,4) = t;
-                t_final = T*t_final;
-        
-                % transform input point cloud
-                Yt = R*new' + t;
-                P = R*P + t;
+        R = U*V';
+        t = mean(model,1)' - R*mean(new,1)';
 
-                % error calculations
-                eigen = sum(sum(S));
-                [N, ~] = size(model);
-                E(i) = 1/N * sum( vecnorm(model' - Yt).^2 );
+        % transform input point cloud
+        Y = R*new' + t;
 
-                % plot point cloud
-                subplot(2,1,1)
-                axis('equal')
-                view(0, 90)
-                hold on
-                plotData3(X, 'b.')
-                plotData3(P, 'ro')
+        % error calculations
+        eigen = sum(sum(S));
+        [N, ~] = size(model);
+        diff = model - Y';
+        dist = vecnorm(diff, 1, 2);
+        error = 1/N * dot(dist, dist');
 
-                % plot error
-                subplot(2,1,2)
-                semilogy(E(1:i))
-                ylim([0.00001, 0.01])
-                xlabel('ICP Iterations')
-                ylabel('Error Value')
-                pause(0.001)
-        
-                
-                if E(i) < 0.00001
-                        break
-                end
-        
+end
+
+
+%% Helper function
+function [model, input, distances] = closestCloud(original1, original2)
+%CLOSESTCLOUD Summary of this function goes here
+%   Calculate closest points between two point clouds
+
+        % check data set sizes for comparison
+        [r1, c1] = size(original1);
+        [r2, ~] = size(original2);
+
+        if r1 < c1
+                original1 = original1';
+                original2 = original2';
+                [r1, ~] = size(original1);
+                [r2, ~] = size(original2);
         end
+        
+        % different number of points
+        if r1 ~= r2
+                if r1 > r2
+                        rows = randperm(r1, r2);
+                        model = original1(rows,:);
+                        input = original2;
+        
+                else % r1 < r2
+                        rows = randperm(r2, r1);
+                        input = original2(rows,:);
+                        model = original1;
+                end
+        else
+                model = original1;
+                input = original2;
+        end
+        
+        % loop through smallest number of rows
+        r = min([r1, r2]);
+        idx = zeros([r, 2]);
+        distances = zeros([r, 1]);
+        for i = 1:r
+                point = model(i,:);
+                dist = vecnorm(input - point, 2, 2);
+                loc = find(dist == min(dist));
+                idx(i,:) = [i, loc];
+                distances(i) = min(dist);
+        end
+        
+        input = input(idx(:,2),:);
 
 end
