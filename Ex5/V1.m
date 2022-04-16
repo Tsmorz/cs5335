@@ -4,35 +4,69 @@
 % load image and video of textbook 
 function V1()
 
-        img_rgb = imread('ex5_data/book-img.jpg');
+        % load template
+       
+ img_rgb = imread('ex5_data/book-img.jpg');
+
+        % convert to gray
         img_gray = rgb2gray(img_rgb);
+        % shrink the template dimensions
         max_dim = 300;
         book = shrink(img_gray, max_dim);
         
+        % load video
         v = VideoReader('ex5_data/book.webm');
         frames= read(v);
-        [~, ~, ~, num] = size(frames);
-        frames = frames(:, :, :, 1:10:num);
+        [rw, co, ch, frm] = size(frames);
 
-        sf0 = isurf(book);
+        % loop through video frames
+        num = 20;
+        frames = frames(:, :, :, 1:num);
          [~, ~, ~, num] = size(frames);
+
+         sf0 = isurf(book);
         for i = 2:num
-                frame = rgb2gray(frames(:,:,:,i));
-                frame = shrink(frame, max_dim);
-                sf1 = isurf(frame);
-                [m, corresp] = match(sf0, sf1, 'top', 50);
+                % matches from book or previous frames
+                if i == 2
+                        frame1 = rgb2gray(frames(:, :, :, 1));
+                        frame1 = shrink(frame1, max_dim);
+                        sf1 = isurf(frame1);
+                        [m1, corresp] = match(sf0, sf1, 'top', 100);
+                        [H1, in] = m1.ransac(@homography, 4);
+                else
+                        H1 = H2;
+                        frame1 = frame2;
+                end
+
+                % convert to gray
+                frame2 = rgb2gray(frames(:,:,:,i));
+                frame2 = shrink(frame2, max_dim);
+                sf2 = isurf(frame2);
+                [m2, corresp] = match(sf0, sf2, 'top', 100);
+                [H2, in] = m2.ransac(@homography, 4);
         
-                [H, in] = m.ransac(@homography, 4);
-                H
-        
-%                 figure(2)
-%                 homwarp(inv(H), frame, 'full')
-                homwarp(H, book, 'full')
-                sf0 = isurf(frame);
+                %H = H1 * inv(H2)
+                H1;
+                H2;
+                H = H1*inv(H2)
+
+                f1 = figure(1);
+                movegui(f1, 'northwest')
+                homwarp(H1, book, 'full')
+                drawnow
+
+                f2 = figure(2);
+                movegui(f2, 'west')
+                imshow(frame1)
+                drawnow
+
+%                 figure(1)
+%                 hold on
+%                 idisp({frame1, frame2})
+%                 m.subset(50).plot('w')
+%                 drawnow
+
         end
-        figure(1)
-        idisp({book, frame})
-        m.subset(100).plot('w')
 
 end
 

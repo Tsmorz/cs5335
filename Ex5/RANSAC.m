@@ -63,7 +63,10 @@ function [inliers, model] = RANSAC(data, e, s, threshold)
                         if count > num
                                 num = count;
                                 model = [radius, center];
-                                inliers = and(outer, not(inner));
+                                idx = and(outer, not(inner));
+                                inliers = 1:length(idx);
+                                inliers = inliers(idx);
+                                inliers = inliers';
                         end
 
                 elseif strcmp(s, 'tube')

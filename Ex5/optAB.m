@@ -1,43 +1,42 @@
 % Tony Smoragiewicz
 % Ex5
 
-function opta()
-
-        figure(1)
-        hold on
-        sgtitle('Robot Position')
+function optAB()
 
         % original cost function
-        x = opt(@cost1);
+        x = optimize(@cost1);
         subplot(2,2,1)
         hold on
         title('a')
         helpPlot(x)
         
         % new cost 1
-        x = opt(@cost2);
+        x = optimize(@cost2);
         subplot(2,2,2)
         hold on
         title('b1')
         helpPlot(x)
 
         % new cost 2
-        x = opt(@cost3);
+        x = optimize(@cost3);
         subplot(2,2,3)
         hold on
         title('b2')
         helpPlot(x)
 
         % new cost 3
-        x = opt(@cost4);
+        x = optimize(@cost4);
         subplot(2,2,4)
         hold on
         title('b3')
         helpPlot(x)
 
 end
+
+
+
 %% Optimization
-function x = opt(fun)
+function x = optimize(fun)
         xstart = [2; 2];
         xgoal = [4; 0];
 
@@ -56,6 +55,7 @@ function x = opt(fun)
         u = reshape(u, [2, T-1]);
         x = horzcat(xstart, cumsum(u, 2) + xstart);
 end
+
 
 
 %% cost functions
@@ -88,4 +88,14 @@ function f = cost4(u)
         steps(2:2:end) = 1;
         x = u.*steps';
         f = dot(x,x);  
+end
+
+
+
+%% helper plot function
+function helpPlot(x)
+        xlabel('x location')
+        ylabel('y location')
+        plot(x(1,:), x(2,:), 'c-')
+        plot(x(1,:), x(2,:), 'k.')
 end

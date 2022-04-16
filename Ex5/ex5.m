@@ -10,7 +10,9 @@
 
 function [] = ex5(questionNum)
         
-        close all;
+        close all
+        format short
+        format compact
         
         if nargin < 1
         error('Error: Please enter a question number as a parameter');
@@ -18,12 +20,20 @@ function [] = ex5(questionNum)
         
         % ========== Question M0 ==========
         if questionNum == 0
-                opt();
+                figure(1)
+                hold on
+                sgtitle('Robot Position')
+                optAB();
+
+                figure(2)
+                optC();
         end
+
         
         % ========== Question M1 ==========
         if questionNum == 1
                 V1();
+                
         end
         
         % ========== Question M2 ==========
@@ -73,7 +83,6 @@ function [] = ex5(questionNum)
                 steps = 100;
                 E = zeros([steps,1]);
                 Tfinal = eye(4);
-                ts = zeros([steps, 3]);
                 for i = 1:steps
 
                         [R, t, error, dist] = ICP(M1, M2);
@@ -112,7 +121,6 @@ function [] = ex5(questionNum)
                         T(1:3, 1:3) = R;
                         T(1:3, 4) = t;
                         Tfinal = T*Tfinal;
-                        ts(i,:) = t;
 
                         if E(i) < 0.000001
                                 break
@@ -123,21 +131,13 @@ function [] = ex5(questionNum)
                 final = inv(Tfinal);
                 disp(final)
 
-                sumt = cumsum(ts, 1);
-
-%                 figure(2)
-%                 hold on
-%                 plot(sumt(:,1))
-%                 plot(sumt(:,2))
-%                 plot(sumt(:,3))
-
         end
         
         % ========== Question M3 ==========
         if questionNum == 3
                 file = 'ex5_data/ptcloud.mat';
-                [xyz, ~] = loadScan(file);
-                V3(xyz);
+                [xyz, rgb] = loadScan(file);
+                V3(xyz, rgb);
         end
         
         % ========== Question M4 ==========
