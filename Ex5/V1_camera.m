@@ -10,7 +10,7 @@ max_dim = 400;
 book = shrink(img_gray, max_dim);
 sf0 = isurf(book);
 
-cam = webcam(1);
+cam = webcam(0);
 
 for idx = 1:10
 

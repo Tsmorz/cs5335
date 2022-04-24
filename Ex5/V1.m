@@ -5,13 +5,12 @@
 function V1()
 
         % load template
-       
- img_rgb = imread('ex5_data/book-img.jpg');
+        img_rgb = imread('ex5_data/book-img.jpg');
 
         % convert to gray
         img_gray = rgb2gray(img_rgb);
         % shrink the template dimensions
-        max_dim = 300;
+        max_dim = 500;
         book = shrink(img_gray, max_dim);
         
         % load video
@@ -45,28 +44,25 @@ function V1()
                 [m2, corresp] = match(sf0, sf2, 'top', 100);
                 [H2, in] = m2.ransac(@homography, 4);
         
-                %H = H1 * inv(H2)
-                H1;
-                H2;
-                H = H1*inv(H2)
+                H = H1*inv(H2);
+                R = H(1:2, 1:2)
+                t = H(1:2, 3)
 
                 f1 = figure(1);
                 movegui(f1, 'northwest')
                 homwarp(H1, book, 'full')
-                drawnow
 
                 f2 = figure(2);
                 movegui(f2, 'west')
                 imshow(frame1)
                 drawnow
 
-%                 figure(1)
-%                 hold on
-%                 idisp({frame1, frame2})
-%                 m.subset(50).plot('w')
-%                 drawnow
-
         end
+
+        figure(3)
+        hold on
+        idisp({book, frame1})
+        m1.subset(50).plot('g')
 
 end
 

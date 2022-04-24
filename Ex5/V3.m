@@ -96,7 +96,6 @@ function [] = V3(model, rgb)
         s = 'sphere';
         threshold = 0.005;
         [inliers, model] = RANSAC(xyz, e, s, threshold);
-        size(inliers)
         figure(1);
         hold on
         plot3(xyz(inliers,1), xyz(inliers,2), xyz(inliers,3), 'c.')
@@ -117,7 +116,6 @@ function [] = V3(model, rgb)
 
         figure(2)
         inliersImg = [mod(inliers, r), ceil(inliers/r)];
-        size(inliersImg)
         color = [0, 1, 1];
         for j = 1:length(inliersImg)
                 for k = 1:3

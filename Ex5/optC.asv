@@ -1,0 +1,129 @@
+% Tony Smoragiewicz
+% Ex5 - OPTc
+
+% light-dark domain planning
+function x = optC()
+        xstart = [2;
+                      2;
+                      5];
+        xgoal = [4;
+                      0;
+                      0.01];
+
+        T = 20;
+
+        x0 = zeros([5*T, 1]);
+
+        A = [];
+        b = [];
+
+        % command state
+        mat = [0, 0, 1, 0;
+                   0, 0, 0, 1];
+        commands = repmat(mat, [1, T]);
+        commands(:, end-1:end) = 0;
+
+        % position state
+        mat = zeros([4, 4]);
+        state = repmat(mat, [1, T]);
+        Aeq = vertcat(commands, state);
+
+        % initial position
+        Aeq(3:4, 1:2) = eye(2);
+
+        % final position
+        Aeq(6:end, end-5:end-3) = eye(3);
+
+        beq = zeros([8, 1]);
+        beq(1:2) = xgoal(1:2) - xstart(1:2);
+        beq(3:5) = xstart;
+        beq(6:end) = xgoal;
+
+        lb = 0.00;
+        ub = 0.01;
+
+        nonlcon = @nonlincon;
+
+        u = fmincon(@cost, x0, A, b, Aeq, beq, ub, lb, nonlcon);
+        u = reshape(u, [2, T-1]);
+
+        % plot lighting
+        x = -5:0.5:5;
+        y = -5:0.5:5;
+        [X, Y] = meshgrid(x,y);
+        Z = -1/2 * (5 - X).^2 + 0.1;
+
+        surf(X, Y, Z);
+        hold on
+        axis('equal')
+        shading interp
+        colormap gray
+        title('Robot Position')
+        xlabel('x position')
+        ylabel('y position')
+        xlim([1, 5])
+        ylim([-1, 3])
+        view(2);
+
+        plot(2,2, 'r*')
+        plot(4,0, 'k*')
+
+        belief = zeros([3,T]);
+        belief(:, 1) = xstart;
+        for i = 1:T-1
+                belief(1:2, i+1) = belief(1:2,i) + u(:,i);
+                x = belief(1, i+1);
+                y = belief(2, i+1);
+                var = belief(3, i);
+                var = kalman([x, y, var]);
+                belief(3, i+1) = var(1,1);
+        end
+
+        for i = 1:T
+                x = belief(1,i);
+                y = belief(2,i);
+                r = belief(3,i)/5;
+                
+                circle(x,y,r)
+                plot(x, y, 'k.')
+        end
+end
+
+
+%% cost functions
+% sum of all squared commands
+function f = cost(u) 
+         f = dot(u, u); 
+end
+
+
+%% position nonlinear constraint
+function variance = nonlincon(u, xstart)
+        xstart
+
+end
+
+
+%% robot uncertainty
+function var = kalman(belief)
+
+        % prediction
+        transition = 0.01*eye(2);
+        var_pred = belief(3)*eye(2) + transition;
+
+        % innovation
+        sig_w = 1/2 * (5-belief(1))^2 + 0.01;
+        K = var_pred / (var_pred + sig_w);
+
+        % update
+        var = (eye(2) - K) * var_pred;
+        
+end
+
+% plot circle
+function circle(x,y,r)
+        ang=0:0.01:2*pi; 
+        xp=r*cos(ang);
+        yp=r*sin(ang);
+        plot(x+xp,y+yp, 'r');
+end

@@ -42,13 +42,13 @@ function x = optimize(fun)
 
         T = 20;
 
-        x0 = zeros([2*(T-1), 1]);
+        x0 = zeros([2*T-2, 1]);
 
         A = [];
         b = [];
 
         Aeq = repmat(eye(2), [1, T-1]);
-        beq = xgoal - xstart;
+        beq = [xgoal - xstart];
 
         u = fmincon(fun, x0, A, b, Aeq, beq);
 
@@ -60,8 +60,8 @@ end
 
 %% cost functions
 % sum of all squared commands
-function f = cost1(u) 
-         f = dot(u, u); 
+function f = cost1(u)
+        f = dot(u, u);
 end
 
 % cost to go is smaller at the start for both x and y

@@ -20,13 +20,15 @@ function [] = ex5(questionNum)
         
         % ========== Question M0 ==========
         if questionNum == 0
-                figure(1)
+                f1 = figure(1);
                 hold on
                 sgtitle('Robot Position')
+                movegui(f1, 'northwest')
                 optAB();
 
-                figure(2)
-                optC();
+                % light dark domain
+                figure(2);
+                optC(15);
         end
 
         
@@ -57,7 +59,7 @@ function [] = ex5(questionNum)
                 M2 = M;
 
                 % add noise
-                M2 = M2 + 0.00001*rand(size(M2));
+                M2 = M2 + 0.01*rand(size(M2));
 
                 % apply transform
                 t = 1/5 * rand([3, 1]);
@@ -123,7 +125,11 @@ function [] = ex5(questionNum)
                         Tfinal = T*Tfinal;
 
                         if E(i) < 0.000001
+                                disp('Exited with a close alignment.')
                                 break
+                        end
+                        if i == steps
+                                disp('Exited with maximum number of ICP iterations.')
                         end
                 end
 
